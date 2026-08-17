@@ -1,13 +1,29 @@
 from django.shortcuts import get_object_or_404, redirect, render
+from functools import wraps
 
 from blogs.models import Blog, Category
-from django.contrib.auth.decorators import login_required
-
 from dashboards.forms import BlogPostForm, CategoryForm, AddUserForm, EditUserForm
 from django.template.defaultfilters import slugify
 from django.contrib.auth.models import User
  
-@login_required(login_url='login')
+
+def staff_required(view_func):
+    @wraps(view_func)
+    def wrapper(request, *args, **kwargs):
+
+        if not request.user.is_authenticated:
+            return redirect('login')
+
+        if not request.user.is_staff:
+            return render(request, 'permission_denied.html', status=403)
+
+        return view_func(request, *args, **kwargs)
+
+    return wrapper
+
+
+
+@staff_required
 def dashboard(request):
     category_count = Category.objects.all().count()
     blogs_count = Blog.objects.all().count()
@@ -18,23 +34,26 @@ def dashboard(request):
     }
     return render(request, 'dashboard/dashboard.html',context)
 
+@staff_required
 def categories(request):
     return render(request, 'dashboard/categories.html')
 
 
+@staff_required
 def add_category(request):
     if request.method == 'POST':
         form = CategoryForm(request.POST)
         if form.is_valid():
             form.save()
             return redirect('categories')
-    form = CategoryForm
+    form = CategoryForm()
     context = {
         'form' : form,
     }
     return render(request,'dashboard/add_category.html', context)
 
 
+@staff_required
 def edit_category(request, pk):
     category = get_object_or_404(Category, pk=pk)
     if request.method =='POST':
@@ -50,12 +69,14 @@ def edit_category(request, pk):
     return render(request, 'dashboard/edit_category.html', context)
 
 
+@staff_required
 def delete_category(request, pk):
     category = get_object_or_404(Category, pk=pk)
     category.delete()
     return redirect('categories')
 
 
+@staff_required
 def posts(request):
     posts = Blog.objects.all()
     context = {
@@ -64,6 +85,7 @@ def posts(request):
     return render(request, 'dashboard/posts.html', context)
 
 
+@staff_required
 def add_post(request):
     if request.method == 'POST':
         form = BlogPostForm(request.POST, request.FILES)
@@ -86,6 +108,7 @@ def add_post(request):
 
 
 
+@staff_required
 def edit_post(request, pk):
     post = get_object_or_404(Blog, pk=pk)
     if request.method == 'POST':
@@ -104,6 +127,7 @@ def edit_post(request, pk):
     return render (request, 'dashboard/edit_post.html', context)
 
 
+@staff_required
 def delete_post(request, pk):
     post = get_object_or_404(Blog, pk=pk)
     post.delete()
@@ -111,6 +135,7 @@ def delete_post(request, pk):
 
 
 
+@staff_required
 def users(request):
     users = User.objects.all()
     context  = {
@@ -118,7 +143,7 @@ def users(request):
     }
     return render(request, 'dashboard/users.html', context)
 
-
+@staff_required
 def add_user(request):
     if request.method == 'POST':
         form = AddUserForm(request.POST)
@@ -134,6 +159,7 @@ def add_user(request):
     return render(request,'dashboard/add_user.html', context)
 
 
+@staff_required
 def edit_user(request, pk):
     user = get_object_or_404(User, pk=pk)
     if request.method == 'POST':
@@ -148,6 +174,7 @@ def edit_user(request, pk):
     return render(request, 'dashboard/edit_user.html', context)
 
 
+@staff_required
 def delete_user(request, pk):
     user = get_object_or_404(User, pk=pk)
     user.delete()

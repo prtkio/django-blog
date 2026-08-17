@@ -4,7 +4,7 @@
 
 <!DOCTYPE html>
 <html lang="en">
-<head>
+  <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -14,7 +14,7 @@
     <link href="{% static 'css/blog.css'%}" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
   </head>
-<body>
+  <body>
     <div class="container">
       <header class="blog-header py-3">
         <div class="row flex-nowrap justify-content-between align-items-center">
@@ -31,13 +31,23 @@
           </div>
           <div class="col-4 d-flex justify-content-end align-items-center">
             {% if not user.is_authenticated %}
-            <a class="btn btn-sm btn-warning" href="{% url 'login' %}">Login</a> &nbsp;
-            <a class="btn btn-sm btn-outline-secondary" href="{% url 'register' %}">Register</a>
+              <a class="btn btn-sm btn-warning" href="{% url 'login' %}">Login</a> &nbsp;
+              <a class="btn btn-sm btn-outline-secondary" href="{% url 'register' %}">Register</a>
             {% else %}
-            <span><a href="{% url 'dashboard' %}">Dashboard</a></span>
-            &emsp;
-            <span><a href="{% url 'logout' %}">Logout</span>
+
+            {% if user.is_staff %}
+              <span>
+               <a href="{% url 'dashboard' %}">Dashboard</a>
+              </span>
+              &emsp;
             {% endif %}
+
+              <span>
+               <a href="{% url 'logout' %}">Logout</a>
+              </span>
+
+            {% endif %}
+            
           </div>
         </div>
       </header>
@@ -50,16 +60,16 @@
         </nav>
       </div>
 
-<! -- Main content Part -->
-{% block content%}
+    <! -- Main content Part -->
+      {% block content%}
 
 
-{% endblock %}
+       {% endblock %}
 
 
-<! -- Footer Part -->
-<footer class="blog-footer">
-  <p>Django blog built with ❤️ by <a href="#">Pratik Dapal</a></p>
-</footer>
-</body>
+    <! -- Footer Part -->
+    <footer class="blog-footer">
+      <p>Django blog built with ❤️ by <a href="#">Pratik Dapal</a></p>
+    </footer>
+  </body>
 </html>

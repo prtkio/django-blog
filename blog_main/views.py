@@ -44,19 +44,29 @@ def register(request):
 def login(request):
     if request.method == 'POST':
         form = AuthenticationForm(request, request.POST)
+
         if form.is_valid():
             username = form.cleaned_data['username']
             password = form.cleaned_data['password']
 
             user = auth.authenticate(username=username, password=password)
+
             if user is not None:
                 auth.login(request, user)
-            return redirect('dashboard')
-    form = AuthenticationForm()
+
+                if user.is_staff:
+                    return redirect('dashboard')
+                else:
+                    return redirect('home')
+
+    else:
+        form = AuthenticationForm()
+
     context = {
         'form': form,
     }
-    return render (request, 'login.html', context)
+
+    return render(request, 'login.html', context)
 
 def logout(request):
     auth.logout(request)
